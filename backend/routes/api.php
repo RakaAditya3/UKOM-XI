@@ -7,6 +7,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
 
 // == AUTH ==
 Route::post('/signup', [AuthController::class, 'signup']);
@@ -37,4 +39,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // == APPLY DISCOUNT ==
     Route::post('/cart/apply-voucher', [DiscountController::class, 'applyVoucher']);
+
+    // == ORDER SYSTEM ==
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [OrderController::class, 'index']);
+        Route::get('/{id}', [OrderController::class, 'show']);
+        Route::post('/checkout', [OrderController::class, 'checkout']);
+
+        //admin
+        Route::patch('/{id}/status', [OrderController::class, 'updateStatus']); 
+});
+    // == Midtrans Payment ==
+    Route::post('/payment/create', [PaymentController::class, 'createTransaction']);
+    Route::post('/payment/notification', [PaymentController::class, 'handleNotification']);
 });
