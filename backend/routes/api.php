@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\DiscountController;
 
 // == AUTH ==
 Route::post('/signup', [AuthController::class, 'signup']);
@@ -26,6 +27,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/cart/item/{id}', [CartController::class, 'update']);
     Route::delete('/cart/item/{id}', [CartController::class, 'remove']);
 
-    // == APPLY VOUCHER ==
-    Route::post('/cart/apply-voucher', [CartController::class, 'applyVoucher']);
+   // == DISCOUNT / VOUCHER ==
+    Route::prefix('discounts')->group(function () {
+        Route::get('/', [DiscountController::class, 'index']);
+        Route::post('/', [DiscountController::class, 'store']);
+        Route::put('/{id}', [DiscountController::class, 'update']);
+        Route::delete('/{id}', [DiscountController::class, 'destroy']);
+    });
+
+    // == APPLY DISCOUNT ==
+    Route::post('/cart/apply-voucher', [DiscountController::class, 'applyVoucher']);
 });
