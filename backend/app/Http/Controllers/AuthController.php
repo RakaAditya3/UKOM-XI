@@ -104,4 +104,58 @@ class AuthController extends Controller
             'user' => $otp->user
         ]);
     }
+
+    public function forgotPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+        ], [
+            'email.exists' => 'Email tidak ditemukan dalam sistem'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+
+        // Kirim OTP dengan tipe 'reset'
+        OtpHelper::send($user, 'reset');
+
+        return response()->json([
+            'message' => 'OTP reset password telah dikirim ke email',
+            'email' => $user->email
+        ]);
+    }
+
+    public function verifyResetOtp(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email'    => 'required|email|exists:users,email',
+            'code'     => 'required|string',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $otp = Otp::where('code', $request->code)
+                  ->where('type', 'reset')
+                  ->where('is_used', false)
+                  ->first();
+
+        if (!$otp || $otp->expires_at < Carbon::now()) {
+            return response()->json(['message' => 'OTP tidak valid atau kadaluarsa'], 400);
+        }
+
+        $otp->is_used = true;
+        $otp->save();
+
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return response()->json(['message' => 'Password berhasil direset']);
+    }
 }
