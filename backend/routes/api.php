@@ -17,6 +17,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/verify-login-otp', [AuthController::class, 'verifyLoginOtp']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/verify-reset-otp', [AuthController::class, 'verifyResetOtp']);
+Route::get('/products-home', [ProductController::class, 'productsHome']);
+
 
 
 

@@ -11,7 +11,7 @@ class Product extends Model
 
     protected $fillable = [
         'category_id', 'name', 'slug', 'description',
-        'price', 'discount_price', 'stock', 'brand', 'images', 'is_active'
+        'price', 'discount_price', 'stock', 'brand', 'images', 'is_active', 'is_highlighted',
     ];
 
     protected $casts = [
@@ -23,4 +23,9 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+   public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
 }
