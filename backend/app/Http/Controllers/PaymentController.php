@@ -7,43 +7,124 @@ use Midtrans\Config;
 use Midtrans\Snap;
 use App\Models\Order;
 use App\Models\Payment;
+use Illuminate\Support\Str;
+use App\Models\Cart;
+
 
 class PaymentController extends Controller
 {
-    public function createTransaction(Request $request)
-    {
-        $order = Order::with('user')->findOrFail($request->order_id);
+public function createTransaction(Request $request)
+{
+    $user = $request->user();
+    if (!$user) {
+        return response()->json(['success' => false, 'message' => 'User belum login'], 401);
+    }
+    if (!$user->birth_date) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Silakan isi tanggal lahir Anda di profil untuk melanjutkan pembelian.'
+        ], 403);
+    }
+    $age = \Carbon\Carbon::parse($user->birth_date)->age;
+    if ($age < 17) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Kamu belum cukup umur untuk melakukan pembelian (minimal 17 tahun).'
+        ], 403);
+    }
 
-        Config::$serverKey = config('midtrans.server_key');
-        Config::$isProduction = config('midtrans.is_production');
-        Config::$isSanitized = config('midtrans.is_sanitized');
-        Config::$is3ds = config('midtrans.is_3ds');
+    $request->validate([
+        'address_id' => 'required|integer',
+        'courier' => 'nullable|string',
+        'shipping_cost' => 'nullable|numeric',
+    ]);
 
-        $params = [
-            'transaction_details' => [
-                'order_id' => $order->order_number,
-                'gross_amount' => $order->total,
-            ],
-            'customer_details' => [
-                'first_name' => $order->user->name,
-                'email' => $order->user->email,
-            ],
+    $cart = \App\Models\Cart::with(['items.product'])->where('user_id', $user->id)->first();
+
+    if (!$cart || $cart->items->isEmpty()) {
+        return response()->json(['success' => false, 'message' => 'Keranjang kosong'], 400);
+    }
+
+    foreach ($cart->items as $item) {
+    if (!$item->product) {
+        return response()->json(['success' => false, 'message' => 'Produk tidak ditemukan.'], 400);
+    }
+    if ($item->quantity > $item->product->stock) {
+        return response()->json([
+            'success' => false,
+            'message' => "Stok produk '{$item->product->name}' tidak mencukupi. Maksimal {$item->product->stock}."
+        ], 400);
+    }
+}
+
+
+    $subtotal = $cart->items->sum(fn($item) => $item->price * $item->quantity);
+    $shippingCost = $request->input('shipping_cost', 0);
+    $total = $subtotal + $shippingCost;
+
+    // 💳 Midtrans Config
+    \Midtrans\Config::$serverKey = config('midtrans.server_key');
+    \Midtrans\Config::$isProduction = false;
+    \Midtrans\Config::$isSanitized = true;
+    \Midtrans\Config::$is3ds = true;
+
+    // 🧾 Item Details
+    $items = $cart->items->map(function ($item) {
+        return [
+            'id' => $item->product_id,
+            'price' => (int) $item->price,
+            'quantity' => $item->quantity,
+            'name' => $item->product->name ?? 'Produk',
         ];
+    })->toArray();
 
-        $snapToken = Snap::getSnapToken($params);
+    // Tambahkan ongkir ke item detail
+    if ($shippingCost > 0) {
+        $items[] = [
+            'id' => 'ONGKIR',
+            'price' => (int) $shippingCost,
+            'quantity' => 1,
+            'name' => 'Ongkos Kirim',
+        ];
+    }
 
-        Payment::create([
-            'order_id' => $order->id,
-            'method' => 'bank_transfer',
-            'amount' => $order->total,
-            'status' => 'pending',
-        ]);
+    // === Data transaksi Midtrans ===
+    $payload = [
+        'transaction_details' => [
+            'order_id' => 'INV-' . strtoupper(uniqid()),
+            'gross_amount' => (int) $total,
+        ],
+        'item_details' => $items,
+        'customer_details' => [
+            'first_name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone ?? '',
+        ],
+    ];
+
+    try {
+        $snapToken = \Midtrans\Snap::getSnapToken($payload);
 
         return response()->json([
+            'success' => true,
             'snap_token' => $snapToken,
-            'redirect_url' => "https://app.sandbox.midtrans.com/snap/v2/vtweb/" . $snapToken,
+            'total' => $total,
+            'subtotal' => $subtotal,
+            'shipping_cost' => $shippingCost,
         ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal membuat transaksi Midtrans',
+            'error' => $e->getMessage(),
+        ], 500);
     }
+}
+
+
+
+
+
 
     public function handleNotification(Request $request)
     {
@@ -59,7 +140,7 @@ class PaymentController extends Controller
         $transactionStatus = $payload['transaction_status'] ?? null;
         $transactionId = $payload['transaction_id'] ?? null;
 
-        if ($transactionStatus === 'capture' || $transactionStatus === 'settlement') {
+        if (in_array($transactionStatus, ['capture', 'settlement'])) {
             $order->status = 'paid';
             $payment->status = 'success';
         } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {

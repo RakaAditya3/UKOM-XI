@@ -12,10 +12,9 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Collections</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/collections/timepieces">Timepieces</Link></li>
-              <li><Link href="/collections/connected">Connected Watches</Link></li>
-              <li><Link href="/collections/eyewear">Eyewear</Link></li>
-              <li><Link href="/collections">All Collections</Link></li>
+              <li><Link href="/">Home</Link></li>
+              <li><Link href="/TAG-HEUER-F1">Tag Heur F1</Link></li>
+              <li><Link href="/collection">All Collections</Link></li>
             </ul>
           </div>
 
@@ -23,11 +22,9 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Maison</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/about">Our Story</Link></li>
+              <li><Link href="/about-us">About Us</Link></li>
               <li><Link href="/history">History</Link></li>
               <li><Link href="/savoir-faire">Savoir-Faire</Link></li>
-              <li><Link href="/careers">Careers</Link></li>
-              <li><Link href="/press">Press Corner</Link></li>
             </ul>
           </div>
 
@@ -35,11 +32,10 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">Support</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/contact">Contact Us</Link></li>
+              <li><Link href="/contact-us">Contact Us</Link></li>
               <li><Link href="/faq">FAQ</Link></li>
               <li><Link href="/warranty">Warranty</Link></li>
-              <li><Link href="/returns">Returns / Shipping</Link></li>
-              <li><Link href="/track-order">Track Order</Link></li>
+              <li><Link href="/shipping">Shipping</Link></li>
             </ul>
           </div>
 
@@ -89,7 +85,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Your Chronova. All rights reserved.
           </p>
           <p>
-            Back to <Link href="/" className="underline">top</Link>
+            Back to <Link href="/" className="underline">Home</Link>
           </p>
         </div>
       </div>

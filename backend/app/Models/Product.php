@@ -11,7 +11,7 @@ class Product extends Model
 
     protected $fillable = [
         'category_id', 'name', 'slug', 'description',
-        'price', 'discount_price', 'stock', 'brand', 'images', 'is_active', 'is_highlighted',
+        'price', 'discount_price', 'stock', 'brand_id', 'images', 'is_active', 'is_highlighted', 'modal_cost', 'sku'
     ];
 
     protected $casts = [
@@ -27,5 +27,20 @@ class Product extends Model
     {
         return $this->hasMany(ProductImage::class);
     }
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    public function ratings()
+{
+    return $this->hasMany(ProductRating::class);
+}
+
+public function averageRating()
+{
+    return $this->ratings()->avg('rating');
+}
+
 
 }

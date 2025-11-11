@@ -14,7 +14,9 @@ class Order extends Model
         'status',
         'subtotal',
         'discount_total',
-        'total'
+        'total',
+        'is_confirmed',
+        'confirmed_at',
     ];
 
     public function items()
@@ -36,5 +38,10 @@ class Order extends Model
     {
         return $this->belongsTo(Voucher::class);
     }
+    public function images()
+{
+    return $this->hasMany(ProductImage::class);
+}
+
 
 }

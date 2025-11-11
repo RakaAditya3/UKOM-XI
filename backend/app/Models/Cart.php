@@ -10,6 +10,8 @@ class Cart extends Model
         'user_id',
         'vouched_id',
         'total',
+        'shipping_cost',
+        'courier',
     ];
     
     public function user() {

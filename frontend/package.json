@@ -10,21 +10,36 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.12.2",
+    "apexcharts": "^5.3.5",
     "axios": "^1.12.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "flatpickr": "^4.6.13",
     "framer-motion": "^12.23.22",
+    "jsvectormap": "^1.7.0",
     "lucide-react": "^0.545.0",
     "next": "15.5.4",
+    "next-themes": "^0.4.6",
+    "nextjs-toploader": "^3.9.17",
+    "nodemailer": "^7.0.10",
     "react": "19.1.0",
+    "react-apexcharts": "^1.8.0",
     "react-dom": "19.1.0",
+    "react-google-recaptcha": "^3.1.0",
     "react-slick": "^0.31.0",
-    "slick-carousel": "^1.8.1"
+    "recharts": "^3.3.0",
+    "slick-carousel": "^1.8.1",
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^7.0.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/react-google-recaptcha": "^2.1.9",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

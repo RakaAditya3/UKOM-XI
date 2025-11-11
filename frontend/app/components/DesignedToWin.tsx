@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function DesignedToWinWithGif() {
   return (
@@ -19,9 +20,13 @@ export default function DesignedToWinWithGif() {
         <br />
         We are, by nature, <span className="font-semibold">DESIGNED TO WIN.</span>
       </p>
-      <button className="px-8 py-3 border border-black text-black tracking-wider text-sm hover:bg-black hover:text-white transition-all">
-        DISCOVER
-      </button>
+      <Link href="/TAG-HEUER-F1">
+            <button
+              className="px-8 py-3 border border-black text-black tracking-wider text-sm hover:bg-black hover:text-white transition-all"
+            >
+              DISCOVER
+            </button>
+        </Link>
       <div className="flex justify-center mt-10">
         <img
           src="https://www.tagheuer.com/on/demandware.static/-/Library-Sites-TagHeuer-Shared/default/dwaf3fe3e5/images/univers/9-Maison/cross-animation.gif"

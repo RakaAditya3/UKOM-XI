@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function DesignedToWinWithGif() {
   return (
@@ -14,9 +15,13 @@ export default function DesignedToWinWithGif() {
       <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight mb-4">
         Collections
       </h1>
-      <button className="px-8 py-3 border border-black text-black tracking-wider text-sm hover:bg-black hover:text-white transition-all">
-        DISCOVER
-      </button>
+       <Link href="/collection">
+            <button
+              className="px-8 py-3 border border-black text-black tracking-wider text-sm hover:bg-black hover:text-white transition-all"
+            >
+              DISCOVER
+            </button>
+        </Link>
     </section>
   );
 }

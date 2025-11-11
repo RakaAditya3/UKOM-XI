@@ -9,6 +9,8 @@ import axios from "@/api/api";
 import DesignedToWin from "./components/DesignedToWin";
 import Collection from "./components/Collection";
 import Footer from "./components/Footer";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -48,7 +50,7 @@ export default function HomePage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar isHomePage={true} />
       {/* === HERO SECTION === */}
       <section className="relative h-screen w-full overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
@@ -121,8 +123,8 @@ export default function HomePage() {
             />
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition" />
             <div className="absolute bottom-10 left-0 right-0 text-center text-white">
-              <p className="text-sm tracking-widest mb-1">NEW TAG HEUER CONNECTED</p>
-              <h2 className="text-3xl font-semibold mb-6">CALIBRE E5 MEN</h2>
+              <p className="text-sm tracking-widest mb-1">NEW CHRONOVA CONNECTED</p>
+              <h2 className="text-3xl font-semibold mb-6">MEN</h2>
               <button
                 onClick={() => console.log("Go to Men Collection")}
                 className="px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
@@ -143,8 +145,8 @@ export default function HomePage() {
             />
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition" />
             <div className="absolute bottom-10 left-0 right-0 text-center text-white">
-              <p className="text-sm tracking-widest mb-1">NEW TAG HEUER CONNECTED</p>
-              <h2 className="text-3xl font-semibold mb-6">CALIBRE E5 WOMEN</h2>
+              <p className="text-sm tracking-widest mb-1">NEW CHRONOVA CONNECTED</p>
+              <h2 className="text-3xl font-semibold mb-6">WOMEN</h2>
               <button
                 onClick={() => console.log("Go to Women Collection")}
                 className="px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
@@ -215,15 +217,17 @@ export default function HomePage() {
      {/* === PRODUCTS SECTION 2 === */}
     <section className="bg-white py-24 px-6 md:px-16 text-black">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
-          <div className="relative group overflow-hidden rounded-2xl shadow-lg">
-            <Image
-              src="/images/jam1.png"
-              alt="Men Collection"
-              width={800}
-              height={600}
-              className="object-cover w-full h-[550px] transition-transform duration-700 group-hover:scale-105 "
-            />
-          </div>
+         <Link href="/products" className="block">
+      <div className="relative group overflow-hidden rounded-2xl shadow-lg">
+        <Image
+          src="/images/jam1.png"
+          alt="Men Collection"
+          width={800}
+          height={600}
+          className="object-cover w-full h-[550px] transition-transform duration-700 group-hover:scale-105"
+        />
+      </div>
+    </Link>
 
           <div className="relative group overflow-hidden rounded-2xl shadow-lg">
             <Image
@@ -254,8 +258,8 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
           <div className="relative group overflow-hidden rounded-2xl shadow-lg">
             <Image
-              src="/images/jam4.png"
-              alt="Men Collection"
+              src="/images/jam6.png"
+              alt="Women Collection"
               width={400}
               height={300}
               className="object-cover w-full h-[450px] transition-transform duration-700 group-hover:scale-105 grayscale"
@@ -263,17 +267,16 @@ export default function HomePage() {
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition" />
             <div className="absolute bottom-10 left-0 right-0 text-center text-white">
               <p className="text-sm tracking-widest mb-1">NEW TAG HEUER CONNECTED</p>
-              <h2 className="text-3xl font-semibold mb-6">CALIBRE E5 MEN</h2>
-              <button
-                onClick={() => console.log("Go to Men Collection")}
-                className="px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
+              <h2 className="text-3xl font-semibold mb-6">ENTRY LEVEL</h2>
+             <Link
+                href="/entry-level"
+                className="inline-block px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
               >
                 DISCOVER
-              </button>
+              </Link>
             </div>
           </div>
-
-          <div className="relative group overflow-hidden rounded-2xl shadow-lg">
+           <div className="relative group overflow-hidden rounded-2xl shadow-lg">
             <Image
               src="/images/jam5.png"
               alt="Women Collection"
@@ -285,32 +288,12 @@ export default function HomePage() {
             <div className="absolute bottom-10 left-0 right-0 text-center text-white">
               <p className="text-sm tracking-widest mb-1">NEW TAG HEUER CONNECTED</p>
               <h2 className="text-3xl font-semibold mb-6">TAG HEUR F1</h2>
-              <button
-                onClick={() => console.log("Go to Women Collection")}
-                className="px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
+              <Link
+                href="/TAG-HEUER-F1"
+                className="inline-block px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
               >
                 DISCOVER
-              </button>
-            </div>
-          </div>
-          <div className="relative group overflow-hidden rounded-2xl shadow-lg">
-            <Image
-              src="/images/jam6.png"
-              alt="Women Collection"
-              width={400}
-              height={300}
-              className="object-cover w-full h-[450px] transition-transform duration-700 group-hover:scale-105 grayscale"
-            />
-            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition" />
-            <div className="absolute bottom-10 left-0 right-0 text-center text-white">
-              <p className="text-sm tracking-widest mb-1">NEW TAG HEUER CONNECTED</p>
-              <h2 className="text-3xl font-semibold mb-6">ENTRY LEVEL</h2>
-              <button
-                onClick={() => console.log("Go to Women Collection")}
-                className="px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
-              >
-                DISCOVER
-              </button>
+              </Link>
             </div>
           </div>
           <div className="relative group overflow-hidden rounded-2xl shadow-lg">
@@ -325,56 +308,61 @@ export default function HomePage() {
             <div className="absolute bottom-10 left-0 right-0 text-center text-white">
               <p className="text-sm tracking-widest mb-1">NEW TAG HEUER CONNECTED</p>
               <h2 className="text-3xl font-semibold mb-6">MID LEVEL</h2>
-              <button
-                onClick={() => console.log("Go to Women Collection")}
-                className="px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
-              >
-                DISCOVER
-              </button>
+             <Link href="/mid-level">
+            <button
+              className="px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
+            >
+              DISCOVER
+            </button>
+          </Link>
             </div>
           </div>
-          <div className="relative group overflow-hidden rounded-2xl shadow-lg">
-            <Image
-              src="/images/jam8.png"
-              alt="Women Collection"
-              width={400}
-              height={300}
-              className="object-cover w-full h-[450px] transition-transform duration-700 group-hover:scale-105 grayscale"
-            />
-            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition" />
-            <div className="absolute bottom-10 left-0 right-0 text-center text-white">
-              <p className="text-sm tracking-widest mb-1">NEW TAG HEUER CONNECTED</p>
-              <h2 className="text-3xl font-semibold mb-6">LUXURY</h2>
-              <button
-                onClick={() => console.log("Go to Women Collection")}
-                className="px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
-              >
-                DISCOVER
-              </button>
-            </div>
-          </div>
-          <div className="relative group overflow-hidden rounded-2xl shadow-lg">
-            <Image
-              src="/images/jam9.png"
-              alt="Women Collection"
-              width={400}
-              height={300}
-              className="object-cover w-full h-[450px] transition-transform duration-700 group-hover:scale-105 grayscale"
-            />
-            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition" />
-            <div className="absolute bottom-10 left-0 right-0 text-center text-white">
-              <p className="text-sm tracking-widest mb-1">NEW TAG HEUER CONNECTED</p>
-              <h2 className="text-3xl font-semibold mb-6">ULTRA LUXURY</h2>
-              <button
-                onClick={() => console.log("Go to Women Collection")}
-                className="px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
-              >
-                DISCOVER
-              </button>
-            </div>
-          </div>
-
         </div>
+
+          <div className="max-w-7xl flex md:grid-cols-3 justify-center gap-8 mt-15">
+            <div className="relative group overflow-hidden rounded-2xl shadow-lg">
+              <Image
+                src="/images/jam8.png"
+                alt="Women Collection"
+                width={400}
+                height={300}
+                className="object-cover w-full h-[450px] transition-transform duration-700 group-hover:scale-105 grayscale"
+              />
+              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition" />
+              <div className="absolute bottom-10 left-0 right-0 text-center text-white">
+                <p className="text-sm tracking-widest mb-1">NEW TAG HEUER CONNECTED</p>
+                <h2 className="text-3xl font-semibold mb-6">LUXURY</h2>
+                <Link href="/luxury">
+                <button
+                  className="px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
+                >
+                  DISCOVER
+                </button>
+              </Link>
+              </div>
+            </div>
+            <div className="relative group overflow-hidden rounded-2xl shadow-lg">
+              <Image
+                src="/images/jam9.png"
+                alt="Women Collection"
+                width={400}
+                height={300}
+                className="object-cover w-full h-[450px] transition-transform duration-700 group-hover:scale-105 grayscale"
+              />
+              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition" />
+              <div className="absolute bottom-10 left-0 right-0 text-center text-white">
+                <p className="text-sm tracking-widest mb-1">NEW TAG HEUER CONNECTED</p>
+                <h2 className="text-3xl font-semibold mb-6">ULTRA LUXURY</h2>
+                <Link href="/ultra-luxury">
+                <button
+                  className="px-6 py-3 bg-transparent border border-white text-white hover:bg-white hover:text-black transition font-medium tracking-wider"
+                >
+                  DISCOVER
+                </button>
+              </Link>
+              </div>
+            </div>
+            </div>
       </section>
       <Footer />
     </>
@@ -382,6 +370,7 @@ export default function HomePage() {
 }
 
 export function ProductCard({ product }: { product: any }) {
+  const router = useRouter();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
@@ -389,43 +378,45 @@ export function ProductCard({ product }: { product: any }) {
     (product.images?.map((img: any) => img.image_url) || []).filter(Boolean);
   const displayImage = images.length > 0 ? images[index] : "/no-image.jpg";
 
-  const nextImage = () => {
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation(); // ⛔ jangan redirect
     if (images.length <= 1) return;
     setDirection(1);
     setIndex((prev) => (prev + 1) % images.length);
   };
 
-  const prevImage = () => {
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation(); // ⛔ jangan redirect
     if (images.length <= 1) return;
     setDirection(-1);
     setIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
   const variants: any = {
-  enter: (dir: number) => ({
-    x: dir > 0 ? 150 : -150,
-    opacity: 0,
-    scale: 0.95,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.4, ease: "easeOut" },
-  },
-  exit: (dir: number) => ({
-    x: dir > 0 ? -150 : 150,
-    opacity: 0,
-    scale: 0.95,
-    transition: { duration: 0.3, ease: "easeIn" },
-  }),
-};
-
+    enter: (dir: number) => ({
+      x: dir > 0 ? 150 : -150,
+      opacity: 0,
+      scale: 0.95,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      transition: { duration: 0.4, ease: "easeOut" },
+    },
+    exit: (dir: number) => ({
+      x: dir > 0 ? -150 : 150,
+      opacity: 0,
+      scale: 0.95,
+      transition: { duration: 0.3, ease: "easeIn" },
+    }),
+  };
 
   return (
     <motion.div
       whileHover={{ scale: 1.015 }}
-      className="bg-white rounded-lg overflow-hidden flex flex-col group transition-all duration-300"
+      onClick={() => router.push(`/product/${product.id}`)} // ✅ klik card → detail
+      className="bg-white rounded-lg overflow-hidden flex flex-col group transition-all duration-300 cursor-pointer"
     >
       {/* Gambar */}
       <div className="relative w-full aspect-square bg-gray-50 overflow-hidden">
@@ -443,7 +434,7 @@ export function ProductCard({ product }: { product: any }) {
               src={displayImage}
               alt={product.name || "Product"}
               fill
-              className="object-contain p-4 select-none"
+              className="object-contain p-4 select-none group-hover:scale-105 transition-transform duration-700"
             />
           </motion.div>
         </AnimatePresence>
@@ -467,7 +458,10 @@ export function ProductCard({ product }: { product: any }) {
         )}
 
         {/* Icon Favorite */}
-        <button className="absolute top-3 right-3 bg-white/80 p-2 rounded-full shadow hover:bg-white transition">
+        <button
+          onClick={(e) => e.stopPropagation()} // ⛔ jangan redirect
+          className="absolute top-3 right-3 bg-white/80 p-2 rounded-full shadow hover:bg-white transition"
+        >
           <Heart className="w-4 h-4 text-gray-700" />
         </button>
       </div>
@@ -479,33 +473,21 @@ export function ProductCard({ product }: { product: any }) {
             Special Edition | New
           </p>
         )}
-
         <h3 className="text-sm font-semibold text-gray-900 leading-tight">
           {product.name}
         </h3>
-
         <p className="text-xs text-gray-500">
-          {product.brand || "TAG Heuer"} – {product.stock} pcs
+          {product.brand?.name ?? "Chronova"}
         </p>
-
         <p className="text-[13px] font-medium mt-2">
           Rp {Number(product.price).toLocaleString("id-ID")}
         </p>
-
         {product.discount_price && (
           <p className="text-xs text-gray-400 line-through">
             Rp {Number(product.discount_price).toLocaleString("id-ID")}
           </p>
         )}
-
-        {product.is_customizable && (
-          <span className="inline-block text-[10px] border border-gray-400 px-2 py-0.5 rounded mt-1 uppercase tracking-wide">
-            Customizable
-          </span>
-        )}
       </div>
     </motion.div>
   );
 }
-
-

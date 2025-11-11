@@ -1,69 +1,117 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, Lock, Mail, User } from "lucide-react";
-import api from "@/api/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail, Lock, User, ArrowRight } from "lucide-react";
 import Image from "next/image";
+import api from "@/api/api";
+import { GoogleLogin } from "@react-oauth/google";
+import { useRouter } from "next/navigation";
+import ReCAPTCHA from "react-google-recaptcha";
+import { useRef } from "react";
 
-type Step = "signup" | "login" | "verify";
 
-export default function SignupPage() {
-  const [step, setStep] = useState<Step>("signup");
+type Step = "signup" | "login";
+
+export default function AuthPage() {
+  const [step, setStep] = useState<Step>("login");
   const [form, setForm] = useState({
     email: "",
     password: "",
     name: "",
-    code: "",
   });
-  const [isSignup, setIsSignup] = useState(true);
+  const captchaRef = useRef<ReCAPTCHA>(null);
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const isSignup = step === "signup";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async () => {
-    try {
-      if (step === "signup") {
-        const res = await api.post("/signup", {
+const handleSubmit = async () => {
+  try {
+    setLoading(true);
+    setMessage("");
+
+    // 🔒 Eksekusi reCAPTCHA sebelum submit
+    const token = await captchaRef.current?.executeAsync();
+    captchaRef.current?.reset();
+
+    const endpoint = isSignup ? "/signup" : "/login";
+    const payload = isSignup
+      ? {
           name: form.name,
           email: form.email,
           password: form.password,
-        });
-
-        if (res.data.message?.toLowerCase().includes("otp")) {
-          // arahkan langsung ke halaman verifikasi OTP
-          window.location.href = `/verify-otp?mode=signup&email=${encodeURIComponent(form.email)}`;
-        } else {
-          setMessage(res.data.message || "Gagal mengirim OTP signup.");
+          "g-recaptcha-response": token,
         }
-      } else if (step === "login") {
-        const res = await api.post("/login", {
+      : {
           email: form.email,
           password: form.password,
-        });
+          "g-recaptcha-response": token,
+        };
 
-        if (res.data.message?.toLowerCase().includes("otp")) {
-          window.location.href = `/verify-otp?mode=login&email=${encodeURIComponent(form.email)}`;
-        } else {
-          setMessage(res.data.message || "Gagal mengirim OTP login.");
-        }
+    const res = await api.post(endpoint, payload);
+
+    if (res.data.message?.toLowerCase().includes("otp")) {
+      window.location.href = `/verify-otp?mode=${
+        isSignup ? "signup" : "login"
+      }&email=${encodeURIComponent(form.email)}`;
+    } else {
+      setMessage(res.data.message || "Silakan verifikasi email Anda.");
+    }
+  } catch (err: any) {
+    console.error("❌ Error saat auth:", err);
+
+
+    if (err.response?.data?.errors) {
+      const errors = err.response.data.errors;
+      const errorMessages = Object.values(errors).flat(); 
+      setMessage(errorMessages[0] || "Terjadi kesalahan validasi.");
+    } else if (err.response?.data?.message) {
+      setMessage(err.response.data.message);
+    } else {
+      setMessage("Terjadi kesalahan server. Coba lagi nanti.");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    try {
+      const id_token = credentialResponse.credential;
+      const res = await api.post("/auth/google", { id_token });
+
+      if (res.data.is_new) {
+        alert("Akun baru terdeteksi. OTP signup telah dikirim ke email Anda.");
+        router.push(
+          `/verify-otp?mode=signup&email=${encodeURIComponent(res.data.email)}`
+        );
+      } else {
+        alert("OTP login telah dikirim ke email Anda.");
+        router.push(
+          `/verify-otp?mode=login&email=${encodeURIComponent(res.data.email)}`
+        );
       }
     } catch (err: any) {
-      setMessage(err.response?.data?.message || "Terjadi kesalahan di server.");
+      console.error("❌ Google auth gagal:", err);
+      alert(err.response?.data?.message || "Gagal login dengan Google.");
     }
   };
 
-  const toggleMode = () => {
-    setIsSignup(!isSignup);
-    setStep(isSignup ? "login" : "signup");
-    setMessage("");
+  const handleGoogleError = () => {
+    alert("Login dengan Google gagal. Coba lagi.");
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-black text-white overflow-hidden px-6">
-      {/* === Fullscreen Background Video === */}
+    <div className="relative min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white overflow-hidden px-4">
+      {/* === Background Video === */}
       <video
         autoPlay
         muted
@@ -74,15 +122,15 @@ export default function SignupPage() {
         <source src="/video/richardmille1.mp4" type="video/mp4" />
       </video>
 
-      {/* === Dark Overlay === */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
       {/* === Card === */}
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative z-10 bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-8 w-full max-w-md shadow-2xl"
+        className="relative z-10 w-full max-w-md bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 shadow-2xl"
       >
         {/* Logo */}
         <div className="flex justify-center mb-6">
@@ -97,83 +145,124 @@ export default function SignupPage() {
 
         {/* Title */}
         <h2 className="text-2xl font-semibold text-center mb-6">
-          {isSignup ? "Create Account" : "Sign In"}
+          {isSignup ? "Buat Akun Baru" : "Masuk ke Akun Anda"}
         </h2>
 
-        {/* === SIGNUP or LOGIN FORM === */}
-        <div className="space-y-4">
-          {isSignup && (
+        {/* Form */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-4"
+          >
+            {isSignup && (
+              <div className="relative">
+                <User className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                <input
+                  name="name"
+                  type="text"
+                  placeholder="Nama Lengkap"
+                  value={form.name}
+                  onChange={handleChange}
+                  className="w-full bg-transparent border border-gray-500 rounded-lg px-10 py-3 focus:border-white outline-none text-white"
+                />
+              </div>
+            )}
+
             <div className="relative">
-              <User className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+              <Mail className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
               <input
-                name="name"
-                type="text"
-                placeholder="Full Name"
-                value={form.name}
+                name="email"
+                type="email"
+                placeholder="Alamat Email"
+                value={form.email}
                 onChange={handleChange}
-                className="w-full bg-transparent border border-gray-600 rounded-md px-10 py-2 focus:border-white outline-none"
+                className="w-full bg-transparent border border-gray-500 rounded-lg px-10 py-3 focus:border-white outline-none text-white"
               />
             </div>
-          )}
 
-          <div className="relative">
-            <Mail className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
-            <input
-              name="email"
-              type="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={handleChange}
-              className="w-full bg-transparent border border-gray-600 rounded-md px-10 py-2 focus:border-white outline-none"
-            />
-          </div>
+            
 
-          <div className="relative">
-            <Lock className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
-            <input
-              name="password"
-              type="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={handleChange}
-              className="w-full bg-transparent border border-gray-600 rounded-md px-10 py-2 focus:border-white outline-none"
-            />
-          </div>
-        </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+              <input
+                name="password"
+                type="password"
+                placeholder="Kata Sandi"
+                value={form.password}
+                onChange={handleChange}
+                className="w-full bg-transparent border border-gray-500 rounded-lg px-10 py-3 focus:border-white outline-none text-white"
+              />
+            </div>
 
-        {/* === Message === */}
+            {!isSignup && (
+              <div className="text-right">
+                <button
+                  onClick={() => (window.location.href = "/forgot-password")}
+                  className="text-xs text-gray-400 hover:text-white transition"
+                >
+                  Lupa kata sandi?
+                </button>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Message */}
         {message && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-sm text-gray-400 mt-4 text-center"
-          >
-            {message}
-          </motion.p>
+          <p className="text-sm text-gray-300 text-center mt-3">{message}</p>
         )}
 
-        {/* === Submit Button === */}
+        {/* Submit Button */}
         <motion.button
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
+          disabled={loading}
           onClick={handleSubmit}
-          className="w-full bg-white text-black mt-6 py-3 rounded-md font-semibold flex items-center justify-center gap-2 hover:bg-gray-200 transition"
+          className="w-full bg-white text-black mt-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-gray-200 transition"
         >
-          {isSignup ? "Sign Up" : "Sign In"}
+          {loading ? "Loading..." : isSignup ? "Daftar Sekarang" : "Masuk"}
           <ArrowRight className="w-4 h-4" />
         </motion.button>
 
-        {/* === Switch Mode === */}
-        <p className="text-sm text-gray-400 mt-4 text-center">
+        
+
+        {/* Garis pemisah */}
+        <div className="flex items-center my-5">
+          <div className="flex-grow border-t border-gray-500"></div>
+          <span className="px-4 text-sm text-gray-400">atau</span>
+          <div className="flex-grow border-t border-gray-500"></div>
+        </div>
+
+        {/* ✅ Google Sign In */}
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            useOneTap={false}
+          />
+        </div>
+
+        {/* Switch Mode */}
+        <p className="text-sm text-gray-400 mt-6 text-center">
           {isSignup ? "Sudah punya akun?" : "Belum punya akun?"}{" "}
           <button
-            onClick={toggleMode}
-            className="text-white font-medium hover:underline"
+            onClick={() => setStep(isSignup ? "login" : "signup")}
+            className="text-white font-semibold hover:underline"
           >
-            {isSignup ? "Sign In" : "Create Account"}
+            {isSignup ? "Masuk di sini" : "Buat Akun"}
           </button>
         </p>
       </motion.div>
+      <ReCAPTCHA
+        sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+        size="invisible"
+        ref={captchaRef}
+      />
+
     </div>
   );
 }

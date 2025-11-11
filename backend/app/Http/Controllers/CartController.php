@@ -13,15 +13,48 @@ use Illuminate\Support\Facades\DB;
 class CartController extends Controller
 {
     public function index()
-    {
-        $cart = Cart::with('items.product')->where('user_id', Auth::id())->first();
+{
+    $cart = \App\Models\Cart::with([
+        'items.product.images',
+        'voucher'
+    ])
+    ->where('user_id', auth()->id())
+    ->first();
 
-        if (!$cart) {
-            return response()->json(['message' => 'Keranjang kosong', 'items' => []]);
-        }
-
-        return response()->json($cart);
+    if (!$cart) {
+        return response()->json([
+            'message' => 'Keranjang kosong',
+            'items' => []
+        ]);
     }
+
+    return response()->json($cart);
+}
+
+public function updateShipping(Request $request)
+{
+    $request->validate([
+        'courier' => 'required|string',
+        'shipping_cost' => 'required|integer|min:0',
+    ]);
+
+    $cart = Cart::where('user_id', Auth::id())->first();
+
+    if (!$cart) {
+        return response()->json(['message' => 'Keranjang tidak ditemukan'], 404);
+    }
+
+    $cart->courier = $request->courier;
+    $cart->shipping_cost = $request->shipping_cost;
+    $cart->total = $cart->items()->sum('subtotal') + $cart->shipping_cost;
+    $cart->save();
+
+    return response()->json([
+        'message' => 'Ongkir berhasil diperbarui',
+        'cart' => $cart->load('items.product')
+    ]);
+}
+
 
     public function add(Request $request)
     {
@@ -31,6 +64,15 @@ class CartController extends Controller
         ]);
 
         $product = Product::findOrFail($request->product_id);
+
+        $product = Product::find($request->product_id);
+    if (!$product || $product->stock <= 0) {
+        return response()->json(['message' => 'Produk sudah habis atau tidak tersedia.'], 400);
+    }
+    if ($request->quantity > $product->stock) {
+        return response()->json(['message' => "Stok tidak mencukupi. Tersisa {$product->stock} unit."], 400);
+    }
+
 
         $cart = Cart::firstOrCreate(['user_id' => Auth::id()], ['total' => 0]);
 
@@ -57,22 +99,39 @@ class CartController extends Controller
         return response()->json(['message' => 'Produk berhasil ditambahkan ke keranjang', 'cart' => $cart->load('items.product')]);
     }
 
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
         $request->validate([
-            'cart_item_id' => 'required|exists:cart_items,id',
             'quantity' => 'required|integer|min:1'
         ]);
 
-        $cartItem = CartItem::findOrFail($request->cart_item_id);
-        $cartItem->quantity = $request->quantity;
-        $cartItem->subtotal = $cartItem->price * $request->quantity;
-        $cartItem->save();
+        $item = \App\Models\CartItem::where('id', $id)
+            ->whereHas('cart', fn($q) => $q->where('user_id', auth()->id()))
+            ->with('product')
+            ->first();
 
-        $this->updateCartTotal($cartItem->cart);
+        if (!$item) {
+            return response()->json(['message' => 'Item tidak ditemukan'], 404);
+        }
 
-        return response()->json(['message' => 'Keranjang diperbarui', 'cart' => $cartItem->cart->load('items.product')]);
+        $product = $item->product;
+        if (!$product) {
+            return response()->json(['message' => 'Produk tidak ditemukan'], 404);
+        }
+
+        // ❌ Cek stok
+        if ($request->quantity > $product->stock) {
+            return response()->json([
+                'message' => "Stok tidak mencukupi. Maksimal hanya {$product->stock} unit."
+            ], 400);
+        }
+
+        $item->update(['quantity' => $request->quantity]);
+
+        return response()->json(['message' => 'Quantity berhasil diperbarui']);
     }
+
+
 
     public function remove($id)
     {
@@ -103,9 +162,11 @@ class CartController extends Controller
         return response()->json(['message' => 'Voucher diterapkan', 'cart' => $cart->load('items.product')]);
     }
 
-    private function updateCartTotal(Cart $cart)
-    {
-        $total = $cart->items()->sum('subtotal');
-        $cart->update(['total' => $total]);
-    }
+private function updateCartTotal(Cart $cart)
+{
+    $totalItems = $cart->items()->sum('subtotal');
+    $total = $totalItems + ($cart->shipping_cost ?? 0);
+    $cart->update(['total' => $total]);
+}
+
 }
